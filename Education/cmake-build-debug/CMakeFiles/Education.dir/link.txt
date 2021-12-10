@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/Education.dir/main.cpp.o CMakeFiles/Education.dir/Func.cpp.o  -o Education 
