@@ -21,10 +21,36 @@ struct assignments{
     std::string prob;
     //std::string solution;
     std::vector<student> stu;
+    int k {-1};
+    int contains(const std::string &stud,int g = 0){
+        if(g != 0){
+            for (int i = 0; i < stu.size(); ++i) {
+                if (stu[i].name == stud && stu[i].grades == ""){
+                    return -1;
+                }
+            }
+        }else{
+            for (int i = 0; i < stu.size(); ++i) {
+                if (stu[i].name == stud){
+                    k = i;
+                }
+            }
+        }
+        return k;
+    }
 };
 struct courses{
     std::vector<assignments> assign;
     std::vector<std::string> enrolled;
+    int kiin {-1};
+    int contains(const std::string &stud){
+        for (int i = 0; i < enrolled.size(); ++i) {
+            if (enrolled[i] == stud){
+                kiin = i;
+            }
+        }
+        return kiin;
+    }
     std::string teach;
     std::string name;
 };
@@ -37,13 +63,24 @@ struct loginsys{
 
 std::string logmenu();
 void mainmenu(const std::string &User);
-bool isthere(std::string enstu, std::vector<student> enrolled);
-
+//bool isthere(std::string enstu, std::vector<student> enrolled);
 void tmenu(const std::string &User);
+void smenu(const std::string &User);
+void sgreport(const std::string &User);
+void sregister(const std::string &User);
+void slistcourses(const std::string &User);
+void sselcourses(const std::string &User);
 void tlistcourses(const std::string &User);
 void tcreatecourses(const std::string &User);
 void tselcourses(const std::string &User);
 void tviewcourses(const std::string &User,int &j,std::vector<int> &indexes);
+void sviewcourses(const std::string &User,int &b,std::vector<int> &sindexes);
+void sucourses(const std::string &User,int &b,std::vector<int> &sindexes);
+void sviewassign(const std::string &User,int &b,std::vector<int> &sindexes);
+void sselassign(const std::string &User,int &b,std::vector<int> &sindexes);
+void scourseinfo(const std::string &User,int &b,std::vector<int> &sindexes);
+void ssubmitassign(const std::string &User,int &b,int &sl,std::vector<int> &sindexes,int dkin = -1);
+void tlists(const std::string &User,int &j,std::vector<int> &indexes);
 void tlistassign(const std::string &User,int &j,std::vector<int> &indexes);
 void tcreateassign(const std::string &User,int &j,std::vector<int> &indexes);
 void tselassign(const std::string &User,int &j,std::vector<int> &indexes);

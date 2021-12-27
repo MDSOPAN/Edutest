@@ -18,7 +18,10 @@ int main() {
     Fri.prob = "What is 3+3";
     //Fri.solution = "6";
     CS1.assign.push_back(Fri);
-    CS1.assign[0].stu.push_back(sopan);
+    assignments ne;
+    ne.prob = "What is 5+5";
+    CS1.assign.push_back(ne);
+    //CS1.assign[0].stu.push_back(sopan);
     CS1.enrolled.push_back("Shakil");
     cor.push_back(CS1);
     courses CS2;

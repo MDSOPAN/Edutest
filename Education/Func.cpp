@@ -1,6 +1,8 @@
 #include "Func.h"
 #include <unordered_map>
 #include <iostream>
+#include <algorithm>
+#include <zconf.h>
 
 std::unordered_map<std::string,std::string> US;
 std::unordered_map<std::string,std::string> TS;
@@ -73,6 +75,7 @@ std::string logmenu(){
             User = sys.loginst();
         }else if (k == 2) sys.signup();
         else if (k == 3) User = sys.logint();
+        else return "";
     }
     return User;
 }
@@ -80,6 +83,8 @@ std::string logmenu(){
 void mainmenu(const std::string &User){
     if (TS.find(User) != TS.end()){
         tmenu(User);
+    }else{
+        smenu(User);
     }
 }
 void tlistcourses(const std::string &User){
@@ -130,6 +135,7 @@ void tmenu(const std::string &User){
 
 void start(){
     std::string User = logmenu();
+    if (User == "") return;
     std::cout << "Welcome " << User << std::endl << std::endl;
     mainmenu(User);
 }
@@ -145,11 +151,13 @@ void tviewcourses(const std::string &User,int &j,std::vector<int> &indexes){
     std::cout << "1.List Assignments\n"
               << "2.View Assignments\n"
               << "3.Create Assignments\n"
-              << "4.Back\n";
+              << "4.List Students\n"
+              << "5.Back\n";
     std::cin >> k;
     if (k == 1) tlistassign(User,j,indexes);
     else if (k == 2) tselassign(User,j,indexes);
     else if (k == 3) tcreateassign(User,j,indexes);
+    else if (k == 4) tlists(User,j,indexes);
     else tmenu(User);
 }
 
@@ -278,4 +286,221 @@ void tcreatecourses(const std::string &User){
     ne.teach = User;
     cor.push_back(ne);
     tmenu(User);
+}
+
+void tlists(const std::string &User,int &j,std::vector<int> &indexes){
+    for (int i = 0; i < cor[indexes[j-1]].enrolled.size(); ++i) {
+        std::cout << cor[indexes[j-1]].enrolled[i] << std::endl;
+    }
+    tviewcourses(User,j,indexes);
+}
+
+void smenu(const std::string &User){
+    int si {0};
+    std::cout << "1.Register in a Course\n"
+              << "2.List My Courses\n"
+              << "3.View Course\n"
+              << "4.Grades Report\n"
+              << "5.Back\n";
+    std::cin >> si;
+    if (si == 1) sregister(User);
+    else if (si == 2) slistcourses(User);
+    else if (si == 3) sselcourses(User);
+    else if (si == 4) sgreport(User);
+    else start();
+}
+
+void sregister(const std::string &User){
+    std::cout << "Choose a course to register" << std::endl;
+    int sin;
+    for (int i = 0; i < cor.size(); ++i) {
+        std::cout << i+1 << "." << cor[i].name << std::endl;
+    }
+    std::cin >> sin;
+    sin = sin - 1;
+    if (std::count(cor[sin].enrolled.begin(),cor[sin].enrolled.end(),User)){
+        std::cout << "You are already registered in this course" << std::endl;
+        smenu(User);
+    } else{
+        cor[sin].enrolled.push_back(User);
+        smenu(User);
+    }
+}
+
+void slistcourses(const std::string &User){
+    std::cout << "My Courses:" << std:: endl;
+    for (int i = 0; i < cor.size(); ++i) {
+        if (std::count(cor[i].enrolled.begin(),cor[i].enrolled.end(),User)){
+            std::cout << cor[i].name << " taught by " << cor[i].teach << std::endl;
+            sleep(1);
+        }
+    }
+    smenu(User);
+}
+
+void sselcourses(const std::string &User){
+    int b {0};
+    std::vector<int> sindexes;
+    std::cout << "Choose course" << std::endl;
+    for (int i = 0;i < cor.size();i++){
+        if (std::count(cor[i].enrolled.begin(),cor[i].enrolled.end(),User)){
+            sindexes.push_back(i);
+        }
+    }
+    for (int l = 0; l < sindexes.size(); ++l) {
+        std::cout << l+1 << ". " <<
+                  cor[sindexes[l]].name << std::endl;
+    }
+    std::cin >> b;
+    b = b-1;
+    if (b > sindexes.size()){
+        std::cout << "Invalid Input" << std::endl;
+        smenu(User);
+    }else{
+        sviewcourses(User,b,sindexes);
+    }
+}
+
+void sviewcourses(const std::string &User,int &b,std::vector<int> &sindexes){
+    int sin {0};
+    std::cout << "1.Course Info\n"
+              << "2.View Assignments\n"
+              << "3.Submit Assignments\n"
+              << "4.Unregister from course\n"
+              << "5.Back\n";
+    std::cin >> sin;
+    if (sin == 1) scourseinfo(User,b,sindexes);
+    else if (sin == 2) sviewassign(User,b,sindexes);
+    else if (sin == 3) sselassign(User,b,sindexes);
+    else if (sin == 4) sucourses(User,b,sindexes);
+    else smenu(User);
+}
+
+void scourseinfo(const std::string &User,int &b,std::vector<int> &sindexes){
+    std::cout << "Name: " << cor[sindexes[b]].name << std::endl;
+    std::cout << "Teacher: " << cor[sindexes[b]].teach << std::endl;
+    sviewcourses(User,b,sindexes);
+}
+
+void sviewassign(const std::string &User,int &b,std::vector<int> &sindexes){
+    for (int i = 0; i < cor[sindexes[b]].assign.size(); ++i) {
+        std::cout << "Asssignment " << i+1 << ":" << cor[sindexes[b]].assign[i].prob << std::endl;
+        int ki = cor[sindexes[b]].assign[i].contains(User);
+        if (ki >= 0){
+            std::cout << "Submitted Answer: " << cor[sindexes[b]].assign[i].stu[ki].subsol << std:: endl;
+            sleep(1);
+        } else{
+            std::cout << "Assignment not submitted yet\n";
+            sleep(1);
+        }
+    }
+    sviewcourses(User,b,sindexes);
+}
+
+void sselassign(const std::string &User,int &b,std::vector<int> &sindexes){
+    if (cor[sindexes[b]].assign.empty()){
+        std::cout << "No assignments to view " << std::endl;
+        sviewcourses(User,b,sindexes);
+    }
+    std::cout << "Choose Assignment to Submit:" << std::endl;
+    for (int i = 0; i < cor[sindexes[b]].assign.size(); ++i) {
+        std::cout << "Asignment " << i+1 << "." << cor[sindexes[b]].assign[i].prob << std::endl;
+    }
+    int sl;
+    std::cin >> sl;
+    sl = sl - 1;
+    int kinn = cor[sindexes[b]].assign[sl].contains(User);
+    if (kinn != -1){
+        std::cout<< "This Will udate your current answer.\nAre you sure?\n"
+                 << "1.Yes\n"
+                 << "2.No\n";
+        int sin;
+        std::cin >> sin;
+        if (sin == 2){
+            sviewcourses(User,b,sindexes);
+            return;
+        }else{
+            ssubmitassign(User,b,sl,sindexes,kinn);
+            return;
+        }
+    }
+    if (sl > cor[sindexes[b]].assign.size()){
+        std::cout << "Invalid Input" << std::endl;
+        sviewcourses(User,b,sindexes);
+    }else{
+        ssubmitassign(User,b,sl,sindexes);
+    }
+}
+
+void ssubmitassign(const std::string &User,int &b,int &sl,std::vector<int> &sindexes,int dkin){
+    std::string answer;
+    std::cout << "Enter Assignment Answer: ";
+    std::cin.ignore();
+    getline(std::cin,answer);
+    std::cout << std::endl;
+    if (dkin == -1){
+        student ne;
+        ne.name = User;
+        ne.subsol = answer;
+        cor[sindexes[b]].assign[sl].stu.push_back(ne);
+    }else{
+        cor[sindexes[b]].assign[sl].stu[dkin].subsol = answer;
+    }
+    sviewcourses(User,b,sindexes);
+}
+
+
+void sucourses(const std::string &User,int &b,std::vector<int> &sindexes){
+    std::cout<< "Are you sure?\n"
+             << "1.Yes\n"
+             << "2.No\n";
+    int ssin;
+    std::cin >> ssin;
+    if (ssin == 1){
+        int kiin = cor[sindexes[b]].contains(User);
+        cor[sindexes[b]].enrolled.erase(cor[sindexes[b]].enrolled.begin()+kiin);
+        for (int i = 0; i < cor[sindexes[b]].assign.size(); ++i) {
+            int kki = cor[sindexes[b]].assign[i].contains(User);
+            if (kki != -1){
+                cor[sindexes[b]].assign[i].stu.erase(cor[sindexes[b]].assign[i].stu.begin()+kki);
+            }
+        }
+        smenu(User);
+    }else{
+        sviewcourses(User,b,sindexes);
+        return;
+    }
+}
+
+void sgreport(const std::string &User){
+    for (int i = 0; i < cor.size(); ++i) {
+        if (cor[i].contains(User) != -1) {
+            std::cout << cor[i].name << "-";
+            int subm{0};
+            for (int j = 0; j < cor[i].assign.size(); ++j) {
+                int k = cor[i].assign[j].contains(User);
+                if (k != -1) {
+                    subm++;
+                }
+            }
+            std::cout << "Total Submitted " << subm << " out of " << cor[i].assign.size() << "-";
+            for (int l = 0; l < cor[i].assign.size(); ++l) {
+                int ki = cor[i].assign[l].contains(User);
+                int kj = cor[i].assign[l].contains(User, 2);
+                if (ki != -1 && l != cor[i].assign.size() - 1 && kj != -1) {
+                    std::cout << cor[i].assign[l].stu[ki].grades << ",";
+                } else if (l != cor[i].assign.size() - 1 && kj == -1) {
+                    std::cout << "Not Given Yet,";
+                } else if (ki != -1 && l == cor[i].assign.size() - 1 && kj != -1) {
+                    std::cout << cor[i].assign[l].stu[ki].grades;
+                } else {
+                    std::cout << "Not Given Yet";
+                }
+            }
+            std::cout << std::endl;
+        }else{
+            continue;
+        }
+    }
+    smenu(User);
 }
